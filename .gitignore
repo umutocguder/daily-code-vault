@@ -5,3 +5,6 @@ __pycache__/
 .pytest_cache/
 gitbot.log
 gitbot_error.log
+auto_sync.log
+auto_sync_error.log
+auto_sync.pid
