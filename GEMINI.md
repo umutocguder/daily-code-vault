@@ -1,14 +1,15 @@
-# Workspace Guidelines: Autonomous Development & Auto-Push
+# Workspace Guidelines: Autonomous Development & Safety Boundaries
 
-## Core Principles
-1. **Autonomous Execution**:
-   - For all personal projects and code written in this workspace, do NOT block for manual approval/confirmation steps.
-   - Proactively implement the required solution, run automated verification tests, and finalize changes directly.
+## 1. Safety & Confidentiality Boundaries (STRICT RULE)
+- **Company / Work Code**: NEVER automatically commit, push, or sync any company, work-related, proprietary, client, or employer code/data to GitHub or any remote repository.
+- **Strict Isolation**: Auto-push and automated commit systems apply ONLY to explicitly personal coding vaults/projects (e.g. `daily-code-vault`).
 
-2. **Quality Standards**:
-   - Never write temporary/junk code.
-   - Maintain clean modular architecture, full type hints, docstrings, and comprehensive unit tests.
+## 2. Autonomous Execution for Personal Projects
+- For personal projects and code written in this personal workspace:
+  - Do NOT block for manual approval/confirmation steps.
+  - Proactively write high-quality code, run automated tests, and finalize changes directly.
+  - Automatically commit and push cleanly to your private GitHub repository (`origin main`).
 
-3. **Continuous Auto-Push**:
-   - Ensure all changes are automatically committed with clean Conventional Commit messages and synced with GitHub (`origin main`).
-   - The background auto-sync watcher (`auto_sync.py`) handles continuous real-time synchronization, but the assistant should also ensure working directories are cleanly verified and pushed.
+## 3. Quality Standards
+- Never write temporary/junk code.
+- Maintain clean modular architecture, full type hints, docstrings, and comprehensive unit tests.
