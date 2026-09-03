@@ -25,8 +25,8 @@ IGNORED_PATTERNS = {
     "auto_sync.pid"
 }
 
-DEBOUNCE_SECONDS = 5
-POLL_INTERVAL_SECONDS = 2
+DEBOUNCE_SECONDS = 4
+POLL_INTERVAL_SECONDS = 1
 
 
 def get_project_dir() -> Path:
@@ -49,7 +49,6 @@ def get_file_mtimes(root_dir: Path) -> dict[str, float]:
     """Returns mapping of relative file path -> mtime."""
     mtimes = {}
     for root, dirs, files in os.walk(root_dir):
-        # Filter directories in-place
         dirs[:] = [d for d in dirs if d not in IGNORED_PATTERNS]
         for f in files:
             full_path = Path(root) / f
@@ -71,19 +70,17 @@ def generate_commit_message(root_dir: Path) -> str:
             text=True,
             check=True
         )
-        lines = [line.strip() for line in status_proc.stdout.splitlines() if line.strip()]
-        if not lines:
+        raw_lines = [line for line in status_proc.stdout.splitlines() if line]
+        if not raw_lines:
             return f"chore: auto-sync update [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}]"
 
         modified = []
         added = []
         deleted = []
 
-        for line in lines:
-            status = line[:2]
-            filename = line[3:].strip()
-            # Clean quotes if any
-            filename = filename.strip('"\'')
+        for raw in raw_lines:
+            status = raw[:2]
+            filename = raw[3:].strip().strip('"\'')
             if "?" in status or "A" in status:
                 added.append(filename)
             elif "D" in status:
@@ -101,12 +98,13 @@ def generate_commit_message(root_dir: Path) -> str:
 
         summary = "; ".join(details)
         
-        # Categorize
-        if any("algorithm" in f or "pattern" in f for f in added + modified):
+        # Categorize prefix
+        all_changed = added + modified
+        if any("algorithm" in f or "pattern" in f for f in all_changed):
             prefix = "feat"
-        elif any("README" in f or "JOURNAL" in f or ".md" in f for f in added + modified):
+        elif any("README" in f or "JOURNAL" in f or ".md" in f for f in all_changed):
             prefix = "docs"
-        elif any(".py" in f or ".sh" in f for f in added + modified):
+        elif any(".py" in f or ".sh" in f for f in all_changed):
             prefix = "feat"
         else:
             prefix = "chore"
@@ -119,7 +117,6 @@ def generate_commit_message(root_dir: Path) -> str:
 def commit_and_push(root_dir: Path) -> bool:
     """Stages all changes, commits with meaningful message, and pushes to remote."""
     try:
-        # Check if git has changes
         status_check = subprocess.run(
             ["git", "status", "--porcelain"],
             cwd=root_dir,
@@ -131,29 +128,29 @@ def commit_and_push(root_dir: Path) -> bool:
             return False
 
         commit_msg = generate_commit_message(root_dir)
-        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Changes detected! Staging and committing...")
+        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Changes detected! Staging and committing...", flush=True)
 
         subprocess.run(["git", "add", "."], cwd=root_dir, check=True)
         subprocess.run(["git", "commit", "-m", commit_msg], cwd=root_dir, check=True)
         
-        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Pushing to GitHub (origin main)...")
+        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Pushing to GitHub (origin main)...", flush=True)
         push_proc = subprocess.run(["git", "push", "origin", "main"], cwd=root_dir, capture_output=True, text=True)
         
         if push_proc.returncode == 0:
-            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ✅ Pushed successfully: {commit_msg}")
+            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ✅ Pushed successfully: {commit_msg}", flush=True)
             return True
         else:
-            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ❌ Push failed: {push_proc.stderr}")
+            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ❌ Push failed: {push_proc.stderr}", flush=True)
             return False
     except Exception as e:
-        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ❌ Sync error: {e}")
+        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ❌ Sync error: {e}", flush=True)
         return False
 
 
 def watch_loop(root_dir: Path):
     """Main watching loop with debounce."""
-    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 🚀 Auto-Sync Watcher started on {root_dir}")
-    print(f"Debounce: {DEBOUNCE_SECONDS}s, Poll interval: {POLL_INTERVAL_SECONDS}s")
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 🚀 Auto-Sync Watcher started on {root_dir}", flush=True)
+    print(f"Debounce: {DEBOUNCE_SECONDS}s, Poll interval: {POLL_INTERVAL_SECONDS}s", flush=True)
 
     last_snapshot = get_file_mtimes(root_dir)
     pending_sync = False
@@ -168,7 +165,7 @@ def watch_loop(root_dir: Path):
                 last_snapshot = current_snapshot
                 last_change_time = time.time()
                 pending_sync = True
-                print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Detected file modification, debouncing {DEBOUNCE_SECONDS}s...")
+                print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Detected file modification, debouncing {DEBOUNCE_SECONDS}s...", flush=True)
 
             if pending_sync and (time.time() - last_change_time >= DEBOUNCE_SECONDS):
                 commit_and_push(root_dir)
@@ -176,10 +173,10 @@ def watch_loop(root_dir: Path):
                 pending_sync = False
 
         except KeyboardInterrupt:
-            print("\nAuto-Sync Watcher stopped by user.")
+            print("\nAuto-Sync Watcher stopped by user.", flush=True)
             break
         except Exception as e:
-            print(f"Unexpected watcher error: {e}")
+            print(f"Unexpected watcher error: {e}", flush=True)
             time.sleep(POLL_INTERVAL_SECONDS)
 
 
