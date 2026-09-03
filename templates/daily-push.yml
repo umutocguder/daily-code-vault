@@ -1,0 +1,50 @@
+name: Daily Code Push
+
+on:
+  schedule:
+    # Runs every day at 09:15 UTC (12:15 GMT+3)
+    - cron: '15 9 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate Daily Module & Journal
+        run: |
+          python generator.py
+
+      - name: Run Unit Tests
+        run: |
+          python -m unittest discover -s . -p "test_*.py"
+
+      - name: Commit and Push Changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          COMMIT_MSG=$(cat .last_commit_msg 2>/dev/null || echo "chore(daily): automated daily code update [$(date +'%Y-%m-%d')]")
+          rm -f .last_commit_msg
+          
+          git add .
+          
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "$COMMIT_MSG"
+            git push origin main
+          fi

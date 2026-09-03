@@ -3,3 +3,5 @@ __pycache__/
 .DS_Store
 .last_commit_msg
 .pytest_cache/
+gitbot.log
+gitbot_error.log
