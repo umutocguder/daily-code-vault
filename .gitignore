@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.DS_Store
+.last_commit_msg
+.pytest_cache/
