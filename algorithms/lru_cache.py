@@ -23,7 +23,7 @@ class LRUCache:
             raise ValueError("Capacity must be positive")
         self.capacity = capacity
         self.cache: dict[Any, DNode] = {}
-        
+
         # Dummy head and tail nodes
         self.head = DNode()
         self.tail = DNode()

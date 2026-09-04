@@ -97,7 +97,7 @@ def generate_commit_message(root_dir: Path) -> str:
             details.append(f"remove {', '.join(deleted[:3])}{'...' if len(deleted) > 3 else ''}")
 
         summary = "; ".join(details)
-        
+
         # Categorize prefix
         all_changed = added + modified
         if any("algorithm" in f or "pattern" in f for f in all_changed):
@@ -132,10 +132,10 @@ def commit_and_push(root_dir: Path) -> bool:
 
         subprocess.run(["git", "add", "."], cwd=root_dir, check=True)
         subprocess.run(["git", "commit", "-m", commit_msg], cwd=root_dir, check=True)
-        
+
         print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Pushing to GitHub (origin main)...", flush=True)
         push_proc = subprocess.run(["git", "push", "origin", "main"], cwd=root_dir, capture_output=True, text=True)
-        
+
         if push_proc.returncode == 0:
             print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ✅ Pushed successfully: {commit_msg}", flush=True)
             return True
