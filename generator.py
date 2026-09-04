@@ -532,3 +532,409 @@ if __name__ == "__main__":
     result = generate_entry(base_dir)
     print(f"Generated: {result['title']}")
     print(f"Commit message: {result['commit_message']}")
+
+# Additional Rich Catalogue Modules
+ADDITIONAL_MODULES = [
+    {
+        "category": "algorithms",
+        "name": "min_heap",
+        "title": "Min Heap & Priority Queue",
+        "description": "Binary min-heap supporting push, pop-min, and O(N) heapify with strict type invariants.",
+        "code": '''"""
+Min Heap (Priority Queue) Implementation
+O(log N) push and pop, O(1) peek.
+"""
+from typing import List, Any, Optional
+
+
+class MinHeap:
+    def __init__(self, elements: Optional[List[Any]] = None):
+        self._heap: List[Any] = []
+        if elements:
+            self._heap = list(elements)
+            self._build_heap()
+
+    def _build_heap(self) -> None:
+        """Transforms list into heap in O(N) time."""
+        for i in reversed(range(len(self._heap) // 2)):
+            self._sift_down(i)
+
+    def push(self, item: Any) -> None:
+        """Adds an item into the heap."""
+        self._heap.append(item)
+        self._sift_up(len(self._heap) - 1)
+
+    def pop(self) -> Any:
+        """Removes and returns the minimum element."""
+        if not self._heap:
+            raise IndexError("pop from empty heap")
+        min_item = self._heap[0]
+        last_item = self._heap.pop()
+        if self._heap:
+            self._heap[0] = last_item
+            self._sift_down(0)
+        return min_item
+
+    def peek(self) -> Optional[Any]:
+        """Returns the minimum element without removing it."""
+        return self._heap[0] if self._heap else None
+
+    def _sift_up(self, idx: int) -> None:
+        parent = (idx - 1) // 2
+        while idx > 0 and self._heap[idx] < self._heap[parent]:
+            self._heap[idx], self._heap[parent] = self._heap[parent], self._heap[idx]
+            idx = parent
+            parent = (idx - 1) // 2
+
+    def _sift_down(self, idx: int) -> None:
+        size = len(self._heap)
+        while True:
+            smallest = idx
+            left = 2 * idx + 1
+            right = 2 * idx + 2
+
+            if left < size and self._heap[left] < self._heap[smallest]:
+                smallest = left
+            if right < size and self._heap[right] < self._heap[smallest]:
+                smallest = right
+
+            if smallest == idx:
+                break
+            self._heap[idx], self._heap[smallest] = self._heap[smallest], self._heap[idx]
+            idx = smallest
+
+    def __len__(self) -> int:
+        return len(self._heap)
+''',
+        "test": '''"""Tests for MinHeap."""
+import unittest
+try:
+    from .min_heap import MinHeap
+except ImportError:
+    from min_heap import MinHeap
+
+
+class TestMinHeap(unittest.TestCase):
+    def test_push_and_pop(self):
+        heap = MinHeap()
+        for num in [7, 3, 10, 1, 5]:
+            heap.push(num)
+        self.assertEqual([heap.pop() for _ in range(5)], [1, 3, 5, 7, 10])
+
+    def test_build_heap(self):
+        heap = MinHeap([15, 2, 8, 1, 9])
+        self.assertEqual(heap.peek(), 1)
+        self.assertEqual(heap.pop(), 1)
+        self.assertEqual(heap.pop(), 2)
+
+    def test_empty_heap_exception(self):
+        heap = MinHeap()
+        with self.assertRaises(IndexError):
+            heap.pop()
+
+
+if __name__ == "__main__":
+    unittest.main()
+'''
+    },
+    {
+        "category": "algorithms",
+        "name": "consistent_hashing",
+        "title": "Consistent Hashing Ring",
+        "description": "Consistent Hash Ring with virtual nodes for minimal remapping during node changes.",
+        "code": '''"""
+Consistent Hashing Ring with Virtual Nodes
+"""
+import hashlib
+import bisect
+from typing import Dict, List, Optional
+
+
+class ConsistentHashRing:
+    def __init__(self, replicas: int = 100):
+        self.replicas = replicas
+        self.ring: List[int] = []
+        self.node_map: Dict[int, str] = {}
+
+    def _hash(self, key: str) -> int:
+        return int(hashlib.md5(key.encode("utf-8")).hexdigest(), 16)
+
+    def add_node(self, node: str) -> None:
+        """Adds a server node with multiple virtual replicas on the ring."""
+        for i in range(self.replicas):
+            v_key = f"{node}#replica_{i}"
+            h = self._hash(v_key)
+            idx = bisect.bisect_left(self.ring, h)
+            self.ring.insert(idx, h)
+            self.node_map[h] = node
+
+    def remove_node(self, node: str) -> None:
+        """Removes a server node and all its virtual replicas."""
+        for i in range(self.replicas):
+            v_key = f"{node}#replica_{i}"
+            h = self._hash(v_key)
+            idx = bisect.bisect_left(self.ring, h)
+            if idx < len(self.ring) and self.ring[idx] == h:
+                del self.ring[idx]
+            self.node_map.pop(h, None)
+
+    def get_node(self, key: str) -> Optional[str]:
+        """Finds the server node assigned to the key."""
+        if not self.ring:
+            return None
+        h = self._hash(key)
+        idx = bisect.bisect_right(self.ring, h)
+        if idx == len(self.ring):
+            idx = 0
+        return self.node_map[self.ring[idx]]
+''',
+        "test": '''"""Tests for ConsistentHashRing."""
+import unittest
+try:
+    from .consistent_hashing import ConsistentHashRing
+except ImportError:
+    from consistent_hashing import ConsistentHashRing
+
+
+class TestConsistentHashRing(unittest.TestCase):
+    def test_routing(self):
+        ring = ConsistentHashRing(replicas=50)
+        ring.add_node("node1")
+        ring.add_node("node2")
+        ring.add_node("node3")
+
+        node_a = ring.get_node("user_1001")
+        node_b = ring.get_node("user_1002")
+        self.assertIn(node_a, ["node1", "node2", "node3"])
+        self.assertIn(node_b, ["node1", "node2", "node3"])
+
+    def test_remove_node(self):
+        ring = ConsistentHashRing(replicas=30)
+        ring.add_node("node1")
+        self.assertEqual(ring.get_node("session_key"), "node1")
+        ring.remove_node("node1")
+        self.assertIsNone(ring.get_node("session_key"))
+
+
+if __name__ == "__main__":
+    unittest.main()
+'''
+    },
+    {
+        "category": "patterns",
+        "name": "observer_bus",
+        "title": "Decoupled Event Observer Bus",
+        "description": "Thread-safe event publishing and subscription system supporting multiple topics and typed payloads.",
+        "code": '''"""
+Event Bus / Observer Pattern
+"""
+import threading
+from collections import defaultdict
+from typing import Callable, Dict, List, Any
+
+
+class EventBus:
+    def __init__(self):
+        self._subscribers: Dict[str, List[Callable[[Any], None]]] = defaultdict(list)
+        self._lock = threading.Lock()
+
+    def subscribe(self, topic: str, handler: Callable[[Any], None]) -> None:
+        """Register a subscriber handler for a specific topic."""
+        with self._lock:
+            self._subscribers[topic].append(handler)
+
+    def unsubscribe(self, topic: str, handler: Callable[[Any], None]) -> None:
+        """Unregister an existing subscriber."""
+        with self._lock:
+            if handler in self._subscribers[topic]:
+                self._subscribers[topic].remove(handler)
+
+    def publish(self, topic: str, payload: Any = None) -> int:
+        """Broadcasts payload to all handlers subscribed to the topic."""
+        with self._lock:
+            handlers = list(self._subscribers.get(topic, []))
+
+        for h in handlers:
+            h(payload)
+        return len(handlers)
+''',
+        "test": '''"""Tests for EventBus."""
+import unittest
+try:
+    from .observer_bus import EventBus
+except ImportError:
+    from observer_bus import EventBus
+
+
+class TestEventBus(unittest.TestCase):
+    def test_publish_subscribe(self):
+        bus = EventBus()
+        received = []
+
+        def handler(event):
+            received.append(event)
+
+        bus.subscribe("order_created", handler)
+        count = bus.publish("order_created", {"id": 42})
+
+        self.assertEqual(count, 1)
+        self.assertEqual(received, [{"id": 42}])
+
+    def test_unsubscribe(self):
+        bus = EventBus()
+        received = []
+        handler = lambda x: received.append(x)
+        bus.subscribe("tick", handler)
+        bus.unsubscribe("tick", handler)
+        bus.publish("tick", "payload")
+        self.assertEqual(received, [])
+
+
+if __name__ == "__main__":
+    unittest.main()
+'''
+    },
+    {
+        "category": "algorithms",
+        "name": "topological_sort",
+        "title": "Topological Sort (Kahn's Algorithm)",
+        "description": "Detects dependency order in Directed Acyclic Graphs (DAGs) and identifies dependency cycles.",
+        "code": '''"""
+Topological Sort using Kahn's Algorithm (In-degree traversal).
+"""
+from collections import deque, defaultdict
+from typing import Dict, List, Set, Optional
+
+
+class DependencyGraph:
+    def __init__(self):
+        self.adj: Dict[str, List[str]] = defaultdict(list)
+        self.nodes: Set[str] = set()
+
+    def add_edge(self, from_node: str, to_node: str) -> None:
+        """Directed edge: from_node must run before to_node."""
+        self.adj[from_node].append(to_node)
+        self.nodes.add(from_node)
+        self.nodes.add(to_node)
+
+    def sort(self) -> Optional[List[str]]:
+        """Returns valid linear ordering, or None if cyclic."""
+        in_degree = {node: 0 for node in self.nodes}
+        for u in self.adj:
+            for v in self.adj[u]:
+                in_degree[v] += 1
+
+        queue = deque([node for node, deg in in_degree.items() if deg == 0])
+        ordered: List[str] = []
+
+        while queue:
+            node = queue.popleft()
+            ordered.append(node)
+            for neighbor in self.adj[node]:
+                in_degree[neighbor] -= 1
+                if in_degree[neighbor] == 0:
+                    queue.append(neighbor)
+
+        return ordered if len(ordered) == len(self.nodes) else None
+''',
+        "test": '''"""Tests for Topological Sort."""
+import unittest
+try:
+    from .topological_sort import DependencyGraph
+except ImportError:
+    from topological_sort import DependencyGraph
+
+
+class TestTopologicalSort(unittest.TestCase):
+    def test_valid_dag(self):
+        g = DependencyGraph()
+        g.add_edge("build", "test")
+        g.add_edge("test", "deploy")
+        order = g.sort()
+        self.assertIsNotNone(order)
+        self.assertTrue(order.index("build") < order.index("test") < order.index("deploy"))
+
+    def test_cycle_detection(self):
+        g = DependencyGraph()
+        g.add_edge("A", "B")
+        g.add_edge("B", "C")
+        g.add_edge("C", "A")
+        self.assertIsNone(g.sort())
+
+
+if __name__ == "__main__":
+    unittest.main()
+'''
+    },
+    {
+        "category": "patterns",
+        "name": "retry_with_backoff",
+        "title": "Exponential Backoff & Jitter",
+        "description": "Production retry mechanism with full jitter to avoid the thundering herd problem.",
+        "code": '''"""
+Exponential Backoff with Full Jitter
+"""
+import random
+import time
+from typing import Callable, Any, Type, Tuple
+
+
+def retry_with_backoff(
+    func: Callable[..., Any],
+    max_retries: int = 3,
+    base_delay: float = 0.05,
+    max_delay: float = 1.0,
+    retry_exceptions: Tuple[Type[BaseException], ...] = (Exception,),
+    sleep_fn: Callable[[float], None] = time.sleep
+) -> Any:
+    """Retries a callable using exponential backoff with full jitter."""
+    attempt = 0
+    while True:
+        try:
+            return func()
+        except retry_exceptions as err:
+            attempt += 1
+            if attempt > max_retries:
+                raise err
+            # Exponential delay with full jitter
+            delay = min(max_delay, base_delay * (2 ** (attempt - 1)))
+            jittered_delay = random.uniform(0, delay)
+            sleep_fn(jittered_delay)
+''',
+        "test": '''"""Tests for Retry with Backoff."""
+import unittest
+try:
+    from .retry_with_backoff import retry_with_backoff
+except ImportError:
+    from retry_with_backoff import retry_with_backoff
+
+
+class TestRetry(unittest.TestCase):
+    def test_eventual_success(self):
+        attempts = 0
+        def unstable():
+            nonlocal attempts
+            attempts += 1
+            if attempts < 3:
+                raise ConnectionError("Temporary outage")
+            return "OK"
+
+        result = retry_with_backoff(unstable, max_retries=3, sleep_fn=lambda _: None)
+        self.assertEqual(result, "OK")
+        self.assertEqual(attempts, 3)
+
+    def test_exceeded_retries(self):
+        def always_fail():
+            raise ValueError("Fatal error")
+
+        with self.assertRaises(ValueError):
+            retry_with_backoff(always_fail, max_retries=2, sleep_fn=lambda _: None)
+
+
+if __name__ == "__main__":
+    unittest.main()
+'''
+    }
+]
+
+MODULES.extend(ADDITIONAL_MODULES)
