@@ -4,6 +4,7 @@ Automated daily repository tracking algorithms, software patterns, and technical
 
 ## Activity Log
 
+- **2026-09-04** `[NOTES]` **Distributed Consensus & Raft Protocol** - Concise architectural breakdown of Raft Consensus vs Paxos. (`notes/distributed_consensus_notes.py`)
 - **2026-09-04** `[ALGORITHMS]` **Token Bucket Rate Limiter** - Production-grade token bucket rate limiter for API traffic shaping and concurrency control. (`algorithms/rate_limiter.py`)
 - **2026-09-03** `[ALGORITHMS]` **Prefix Tree (Trie) with Autocomplete** - Fast prefix search tree supporting word insertion, prefix checking, and autocomplete queries. (`algorithms/trie.py`)
 - **2026-09-03** `[PATTERNS]` **Circuit Breaker Pattern** - Prevents cascading service failures in distributed systems. (`patterns/circuit_breaker.py`)
