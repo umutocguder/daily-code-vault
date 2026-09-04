@@ -43,15 +43,19 @@ bkz. `/Users/umut/ai-context/kurallar/baglami-md-ye-yaz.md`.
 - Kod yazıldığında / özellik tamamlandığında **sık sık** commit ve push et
   (`origin main`).
 - Commit mesajları **Conventional Commit** biçiminde: `feat:`, `fix:`,
-  `refactor:`, `docs:`, `test:`.
+  `refactor:`, `docs:`, `style:`, `test:`, `chore:`.
 - Arka plandaki otomatik senkron izleyicisi sürekli çalışır; her iş birimi
   gerçek zamanlı yedeklenir.
 
-## 3. Kalite standartları
+## 3. Kalite standartları & Günlük Otomatik Bakım
 
 - Geçici/çöp kod yazma.
+- **Otomatik günlük push:** Sıfırdan yapay/sentetik algoritma modülü üretmek
+  yerine; mevcut kod yapısını bozmadan basit temizlik, boşluk (whitespace)
+  düzeltmeleri, EOF satır sonu düzeni ve kod hijyeni gibi güvenli bakım işlerini
+  yap (`style:` / `chore:`).
 - Temiz ve modüler mimari, tam tip belirtimleri (type hints), docstring'ler ve
-  kapsamlı birim testleri.
+  kapsamlı birim testleri. Her temizlikten sonra testlerin hatasız geçtiğini doğrula.
 
 ## 4. Günlük
 
