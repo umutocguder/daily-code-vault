@@ -54,6 +54,9 @@ bkz. `/Users/umut/ai-context/kurallar/baglami-md-ye-yaz.md`.
   yerine; mevcut kod yapısını bozmadan basit temizlik, boşluk (whitespace)
   düzeltmeleri, EOF satır sonu düzeni ve kod hijyeni gibi güvenli bakım işlerini
   yap (`style:` / `chore:`).
+- **Kod geliştirilmeyen günler:** Dosyalara zoraki değişiklik eklemek yerine
+  boş commit (`git commit --allow-empty`) atarak yeşil kutucukları ve senkronizasyonu
+  koru; kod dosyalarına gereksiz dokunma.
 - Temiz ve modüler mimari, tam tip belirtimleri (type hints), docstring'ler ve
   kapsamlı birim testleri. Her temizlikten sonra testlerin hatasız geçtiğini doğrula.
 
