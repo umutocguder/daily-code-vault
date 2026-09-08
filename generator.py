@@ -146,14 +146,11 @@ def generate_entry(output_base_dir: str = ".") -> dict:
         summary_files = ", ".join(modified_files[:3])
         log_desc = f"Cleaned trailing whitespace and normalized formatting in `{summary_files}`."
         commit_message = f"style(cleanup): normalize whitespace and EOF formatting in {summary_files} [{today_str}]"
+        update_journal(base_path, today_str, log_desc)
     else:
-        # If all files are already clean, perform daily hygiene check & test verification
+        # If all files are already clean, verify tests without modifying any files (enables empty commits)
         run_tests(base_path)
-        log_desc = "Routine code hygiene verification: whitespace checked, unit tests verified."
-        commit_message = f"chore(hygiene): verify code formatting and test suite [{today_str}]"
-
-    # Always update activity journal so a commit can be made daily
-    update_journal(base_path, today_str, log_desc)
+        commit_message = f"chore(daily): activity check [{today_str}]"
 
     with open(base_path / ".last_commit_msg", "w", encoding="utf-8") as f:
         f.write(commit_message)

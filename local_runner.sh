@@ -21,9 +21,12 @@ fi
 
 git add .
 if git diff --cached --quiet; then
-  echo "No changes to commit."
+  echo "No file changes detected. Creating empty commit as requested..."
+  git commit --allow-empty -m "$COMMIT_MSG"
+  git push origin main
+  echo "Successfully pushed empty commit: $COMMIT_MSG"
 else
   git commit -m "$COMMIT_MSG"
   git push origin main
-  echo "Successfully committed and pushed: $COMMIT_MSG"
+  echo "Successfully committed and pushed changes: $COMMIT_MSG"
 fi
