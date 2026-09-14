@@ -22,14 +22,14 @@ class TelemetryLogger:
         self.error_reporting_url = FIREBASE_ECOSYSTEM_CONFIG["error_reporting_url"]
         self.in_memory_buffer = []
         self.max_buffer = 100
-        
+
         # Local custody log file
         if log_dir is None:
             base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             self.log_dir = os.path.join(base_dir, "logs")
         else:
             self.log_dir = log_dir
-            
+
         try:
             os.makedirs(self.log_dir, exist_ok=True)
             self.log_file = os.path.join(self.log_dir, f"{self.app_name}_telemetry.jsonl")
