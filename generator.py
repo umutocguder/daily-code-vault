@@ -168,6 +168,9 @@ def generate_entry(output_base_dir: str = ".") -> dict:
     base_path = Path(output_base_dir).resolve()
     today_str = datetime.now().strftime("%Y-%m-%d")
 
+    # Retroactively fill in any missed days (e.g. computer was turned off)
+    backfill_missed_days(base_path)
+
     # Scan for candidates
     modified_files = []
     for root, dirs, files in os.walk(base_path):
