@@ -7,7 +7,7 @@ and code hygiene without modifying core logic or breaking code structure.
 import os
 import sys
 import subprocess
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 # Paths/patterns to ignore from cleanup
@@ -25,6 +25,57 @@ IGNORED_PATTERNS = {
 }
 
 SUPPORTED_EXTENSIONS = {".py", ".md", ".sh"}
+
+
+def backfill_missed_days(repo_dir: Path) -> list[str]:
+    """
+    Detects any missed calendar days between the repository start date
+    and yesterday, creating empty commits for them retroactively.
+    Guarantees zero broken streaks even if the computer was turned off.
+    """
+    try:
+        root_date_proc = subprocess.run(
+            ["git", "log", "--reverse", "--format=%cd", "--date=short"],
+            cwd=repo_dir, capture_output=True, text=True, check=True
+        )
+        lines = root_date_proc.stdout.strip().splitlines()
+        if not lines:
+            return []
+        root_date = datetime.strptime(lines[0], "%Y-%m-%d").date()
+
+        proc = subprocess.run(
+            ["git", "log", "--format=%cd", "--date=short"],
+            cwd=repo_dir, capture_output=True, text=True, check=True
+        )
+        committed_dates = set(proc.stdout.strip().splitlines())
+        today = datetime.now().date()
+
+        missed = []
+        curr = root_date
+        while curr < today:
+            d_str = curr.strftime("%Y-%m-%d")
+            if d_str not in committed_dates:
+                missed.append(d_str)
+            curr += timedelta(days=1)
+
+        backfilled = []
+        for d_str in missed:
+            env = os.environ.copy()
+            env["GIT_AUTHOR_DATE"] = f"{d_str} 12:00:00"
+            env["GIT_COMMITTER_DATE"] = f"{d_str} 12:00:00"
+            msg = f"chore(daily): activity check [{d_str}]"
+            res = subprocess.run(
+                ["git", "commit", "--allow-empty", "-m", msg],
+                cwd=repo_dir, env=env, capture_output=True, text=True
+            )
+            if res.returncode == 0:
+                backfilled.append(d_str)
+                print(f"✅ Auto-backfilled missed date: {d_str}")
+
+        return backfilled
+    except Exception as e:
+        print(f"⚠️ Error checking missed days: {e}")
+        return []
 
 
 def is_ignored(path: Path, root_dir: Path) -> bool:
