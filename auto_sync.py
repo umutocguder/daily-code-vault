@@ -133,8 +133,11 @@ def commit_and_push(root_dir: Path) -> bool:
         subprocess.run(["git", "add", "."], cwd=root_dir, check=True)
         subprocess.run(["git", "commit", "-m", commit_msg], cwd=root_dir, check=True)
 
-        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Pushing to GitHub (origin main)...", flush=True)
-        push_proc = subprocess.run(["git", "push", "origin", "main"], cwd=root_dir, capture_output=True, text=True)
+        branch_proc = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=root_dir, capture_output=True, text=True)
+        current_branch = branch_proc.stdout.strip() if branch_proc.returncode == 0 and branch_proc.stdout.strip() else "master"
+
+        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Pushing to GitHub (origin {current_branch})...", flush=True)
+        push_proc = subprocess.run(["git", "push", "origin", current_branch], cwd=root_dir, capture_output=True, text=True)
 
         if push_proc.returncode == 0:
             print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ✅ Pushed successfully: {commit_msg}", flush=True)

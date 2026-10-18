@@ -23,9 +23,10 @@ push_with_retry() {
   local max_retries=5
   local count=0
   local delay=5
+  local branch=$(git rev-parse --abbrev-ref HEAD)
 
   while [ $count -lt $max_retries ]; do
-    if git push origin main; then
+    if git push origin "$branch"; then
       return 0
     fi
     count=$((count + 1))
