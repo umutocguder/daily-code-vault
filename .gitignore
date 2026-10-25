@@ -8,3 +8,23 @@ gitbot_error.log
 auto_sync.log
 auto_sync_error.log
 auto_sync.pid
+
+# 11Hopem Security & Secrets Shield
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.p8
+*.pkcs12
+*credentials*.json
+*service-account*.json
+secrets.json
+secrets.plist
+*.keystore
+id_rsa*
+id_ed25519*
