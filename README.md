@@ -59,7 +59,7 @@ python3 -m unittest discover -s tests
 
 ## 🛡️ License & Attribution
 
-Created by [11Hopem](https://11hopem.com).  
-Copyright © 2026 11Hopem. All rights reserved.  
-Licensed under the [MIT License](LICENSE).  
+Created by [11Hopem](https://11hopem.com).
+Copyright © 2026 11Hopem. All rights reserved.
+Licensed under the [MIT License](LICENSE).
 Official website: [https://11hopem.com](https://11hopem.com)
