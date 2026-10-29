@@ -21,6 +21,13 @@ cat << PLIST > "$PLIST_DEST"
     </array>
     <key>RunAtLoad</key>
     <true/>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>12</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
     <key>StandardOutPath</key>
     <string>$PROJECT_DIR/gitbot.log</string>
     <key>StandardErrorPath</key>
